@@ -40,6 +40,8 @@ def main(args):
             runs = int(args.r)
         except:
             runs = 10
+    else:
+        runs = 10
 
     ## Grab a Workbook and Notebook
     if args.t is None:
