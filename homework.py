@@ -2,9 +2,11 @@
 
 import argparse
 import logging
-import pyglet
+import math
 import PySimpleGUI as sg
+from configparser import ConfigParser
 from datetime import datetime
+from lib.menu import Menu
 from lib.notebook import Notebook
 from lib.workbook import Workbook
 import time
@@ -19,18 +21,6 @@ class Shared(object):
     def __init__(self, wb, nb):
         self.wb = wb
         self.nb = nb
-
-def probGen(sh):
-    ## Load new math problem
-    sh.wb.handler(sh.wb.opr)
-
-    ## Update the stdout
-    sh.counter += 1
-    prb = '{0} {1} {2}'.format(sh.wb.math.get('x'),
-                               sh.wb.math.get('symbol'),
-                               sh.wb.math.get('y'))
-    sh.window['mth'].update('{0} = ?'.format(prb))
-    sh.window.TKroot.title('Question #{0}'.format(sh.counter))
 
 
 def main(args):
@@ -51,25 +41,14 @@ def main(args):
     nb = Notebook()
     sh = Shared(wb, nb)
 
+    ## Drop the menu here, play later with arch layout/routines
+    mn = Menu(sh)
+
     ## Notebook tracing
     sh.counter = 1
 
     ## Setup the window layout
-    layout = [[sg.Text('{0} {1} {2} = ?'.format(wb.math.get('x'),
-                                                wb.math.get('symbol'),
-                                                wb.math.get('y')),
-               key = 'mth',
-               font = theFont)],
-              [sg.Text()],
-              [sg.Text('Your answer:',
-                       font = theFont),
-               sg.InputText(do_not_clear = False,
-                            key = 'answer',
-                            font = theFont)],
-              [sg.Text()],
-              [sg.Button('Ok',
-                         bind_return_key = True,
-                         font = theFont)]]
+    layout = mn.problem()
 
     # Create the Window
     window = sg.Window('Question #1', layout).Finalize()
@@ -107,10 +86,10 @@ def main(args):
             cVal = False
             if vRst == eRst:
                 cVal = True
-                pSound.play()
+                # pSound.play()
             else:
                 cVal = False
-                fSound.play()
+                # fSound.play()
 
             ## Update notebook
             nb.pad.update({sh.counter: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, vRst)})
@@ -136,7 +115,7 @@ def main(args):
             break
 
         ## Load new problem
-        probGen(sh)
+        mn.probGen()
 
         ## Counter check
         if sh.counter == runs + 1:
@@ -152,7 +131,9 @@ def main(args):
             for v in nb.pad.values():
                 if v[2] is True:
                     tCorrect += 1
-            logging.info('Correct answers ~~> {0} out of {1}'.format(tCorrect, runs))
+
+            passPct = '{:.2f}'.format(tCorrect * (100 / runs)) + '%'
+            logging.info('Correct answers ~~> {0} out of {1} ~~> {2}'.format(tCorrect, runs, passPct))
             logging.info('{0} runs met, exiting\n'.format(runs))
             break
 
@@ -165,12 +146,9 @@ logging.basicConfig(filename='student.log', format='%(asctime)s %(message)s',dat
 ## Setup window theme
 sg.theme('Dark')
 
-## Setup font
-theFont = 'Arial 24'
-
-## Sounds
-pSound = pyglet.media.load('sounds/pass.ogg', streaming = False)
-fSound = pyglet.media.load('sounds/fail.ogg', streaming = False)
+## Sounds -- lags on a pi, look for a better solution
+# pSound = pyglet.media.load('sounds/pass.ogg', streaming = False)
+# fSound = pyglet.media.load('sounds/fail.ogg', streaming = False)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'homework')
