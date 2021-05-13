@@ -12,6 +12,9 @@ class Workbook(object):
         parser = ConfigParser()
         parser.read('homework.conf')
         self.addXmin = int(parser.get('addition', 'xMin'))
+        print('workbook.py addXmin')
+        print(self.addXmin)
+        print('')
         self.addXmax = int(parser.get('addition', 'xMax'))
         self.addYmin = int(parser.get('addition', 'yMin'))
         self.addYmax = int(parser.get('addition', 'yMax'))
@@ -34,6 +37,8 @@ class Workbook(object):
 
     def addition(self, x = None, y = None):
         """ x + y """
+        print(self.addXmin)
+        print(self.addXmax)
         if x is None and y is None:
             x = random.randint(self.addXmin, self.addXmax)
             y = random.randint(self.addYmin, self.addYmax)

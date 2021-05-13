@@ -21,6 +21,8 @@ class Shared(object):
     def __init__(self, wb, nb):
         self.wb = wb
         self.nb = nb
+        self.mainWindow = None
+        self.problemWindow = None
 
 
 def main(args):
@@ -47,98 +49,141 @@ def main(args):
     ## Notebook tracing
     sh.counter = 1
 
-    ## Setup the window layout
-    layout = mn.problem()
+    ## Setup the main window layout
+    layoutMain = mn.main()
 
     # Create the Window
-    window = sg.Window('Question #1', layout).Finalize()
-    sh.window = window
+    windowMain = sg.Window('Homework settings', layoutMain).Finalize()
+    windowProblem_active = False
+    sh.windowMain = windowMain
 
-    ## Run the homework
+    ## Launch the main loop
     while True:
 
-        ## Math layout
-        prb = '{0} {1} {2}'.format(wb.math.get('x'),
-                                   wb.math.get('symbol'),
-                                   wb.math.get('y'))
+        ## Read user input
+        eventMain, valuesMain = windowMain.read()
+        print(valuesMain)
 
-       ## Launch
-        event, values = window.read()
-
-        ## Store answer in notepad
-        try:
-            rst = values.get('answer')
-        except:
-            logging.critical('User closed program?')
+        ## Deal with main close
+        # if event is None:
+        if eventMain == sg.WIN_CLOSED:
+            logging.critical('Main window closed\n')
             break
 
-        try:
+        ## Update shared config
+        sh.wb.addXmin = valuesMain.get('addXmin')  ## Offload to menu.py
+        print(sh.wb.addXmin)
+        print(valuesMain.get('addXmin'))
+        sh.wb.addXmax = int(valuesMain.get('addXmax'))  ## Offload to menu.py
+        sh.wb.addYmin = int(valuesMain.get('addYmin'))  ## Offload to menu.py
+        sh.wb.addYmax = int(valuesMain.get('addYmax'))  ## Offload to menu.py
 
-            ## Convert to expecteds
-            eRst = wb.math.get('result')
-            eType = type(eRst)
-            if eType is int:
-                vRst = int(rst)
-            elif eType is float:
-                vRst = float(rst)
+        sh.wb.divXmin = int(valuesMain.get('divXmin'))  ## Offload to menu.py
+        sh.wb.divXmax = int(valuesMain.get('divXmax'))  ## Offload to menu.py
+        sh.wb.divYmin = int(valuesMain.get('divYmin'))  ## Offload to menu.py
+        sh.wb.divYmax = int(valuesMain.get('divYmax'))  ## Offload to menu.py
 
-            ## Verify the math
-            cVal = False
-            if vRst == eRst:
-                cVal = True
-                # pSound.play()
-            else:
-                cVal = False
-                # fSound.play()
+        sh.wb.mulXmin = int(valuesMain.get('mulXmin'))  ## Offload to menu.py
+        sh.wb.mulXmax = int(valuesMain.get('mulXmax'))  ## Offload to menu.py
+        sh.wb.mulYmin = int(valuesMain.get('mulYmin'))  ## Offload to menu.py
+        sh.wb.mulYmax = int(valuesMain.get('mulYmax'))  ## Offload to menu.py
 
-            ## Update notebook
-            nb.pad.update({sh.counter: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, vRst)})
-            logging.info({sh.counter: (prb, cVal, eRst, vRst)})
+        sh.wb.subXmin = int(valuesMain.get('subXmin'))  ## Offload to menu.py
+        sh.wb.subXmax = int(valuesMain.get('subXmax'))  ## Offload to menu.py
+        sh.wb.subYmin = int(valuesMain.get('subYmin'))  ## Offload to menu.py
+        sh.wb.subYmax = int(valuesMain.get('subYmax'))  ## Offload to menu.py
 
-        except:
-            cVal = False
-            fSound.play()
-            logging.debug({sh.counter: (prb, cVal, eRst, rst)})
-            nb.pad.update({sh.counter: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, rst)})
+        ## Settings accepted, move on to problem
+        if eventMain == 'Launch' and not windowProblem_active:
+            windowProblem_active = True
+            windowMain.Hide()
+            layoutProblem = mn.problem()
+            windowProblem = sg.Window('Question #1', layoutProblem)
+            sh.windowProblem = windowProblem
 
-        ## Store the wrong answers so they can retry
+            ## Loop through user input on problems
+            while True:
 
-        if cVal is False:
-            x = prb.split()[0]
-            o = prb.split()[1]
-            y = prb.split()[2]
-            nb.retries.update({sh.counter: (x, o, y)})
+                ## Math layout
+                prb = '{0} {1} {2}'.format(wb.math.get('x'),
+                                           wb.math.get('symbol'),
+                                           wb.math.get('y'))
 
-        ## Close
-        if event is None:
-            logging.critical('Window closed\n')
-            break
+                eventProblem, valuesProblem = windowProblem.read()
 
-        ## Load new problem
-        mn.probGen()
+                ## Deal with problem closed
+                if eventProblem == sg.WIN_CLOSED:
+                    print('CLOSED')
+                    logging.critical('Problem window closed')
+                    windowProblem.Close()
+                    windowProblem_active = False
+                    windowMain.UnHide()
+                    break
 
-        ## Counter check
-        if sh.counter == runs + 1:
-            time.sleep(1)
+                ## Store answer in notepad
+                rst = valuesProblem.get('answer')
 
-            ## Retry logic
-            if len(nb.retries) > 0:
-                for k, v in nb.retries.items():
-                    pass ## Start here for retry functionality
+                try:
+                    ## Convert to expecteds
+                    eRst = wb.math.get('result')
+                    eType = type(eRst)
+                    if eType is int:
+                        vRst = int(rst)
+                    elif eType is float:
+                        vRst = float(rst)
 
-            ## Correct marks
-            tCorrect = 0
-            for v in nb.pad.values():
-                if v[2] is True:
-                    tCorrect += 1
+                    ## Verify the math
+                    cVal = False
+                    if vRst == eRst:
+                        cVal = True
+                    else:
+                        cVal = False
 
-            passPct = '{:.2f}'.format(tCorrect * (100 / runs)) + '%'
-            logging.info('Correct answers ~~> {0} out of {1} ~~> {2}'.format(tCorrect, runs, passPct))
-            logging.info('{0} runs met, exiting\n'.format(runs))
-            break
+                    ## Update notebook
+                    nb.pad.update({sh.counter: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, vRst)})
+                    logging.info({sh.counter: (prb, cVal, eRst, vRst)})
 
-    ## guiExit
-    window.close()
+                except:
+                    cVal = False
+                    logging.debug({sh.counter: (prb, cVal, eRst, rst)})
+                    nb.pad.update({sh.counter: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, rst)})
+
+                ## Store the wrong answers so they can retry
+                if cVal is False:
+                    x = prb.split()[0]
+                    o = prb.split()[1]
+                    y = prb.split()[2]
+                    nb.retries.update({sh.counter: (x, o, y)})
+
+                ## Counter check
+                if sh.counter == runs:
+                    time.sleep(1)
+
+                    ## Retry logic
+                    if len(nb.retries) > 0:
+                        for k, v in nb.retries.items():
+                            pass ## Start here for retry functionality
+
+                    ## Notate how well
+                    tCorrect = 0
+                    for v in nb.pad.values():
+                        if v[2] is True:
+                            tCorrect += 1
+                    passPct = '{:.2f}'.format(tCorrect * (100 / runs)) + '%'
+                    logging.info('Correct answers ~~> {0} out of {1} ~~> {2}'.format(tCorrect, runs, passPct))
+                    logging.info('{0} runs met, exiting\n'.format(runs))
+
+                    ## Close out current problem window
+                    windowProblem.Close()
+                    windowProblem_active = False
+                    windowMain.UnHide()
+
+                    ## Reset counter
+                    sh.counter = 1
+
+                else:
+                    ## Load new problem
+                    mn.probGen()
 
 ## Setup logging
 logging.basicConfig(filename='student.log', format='%(asctime)s %(message)s',datefmt='%Y%m%d %I:%M:%S', level=logging.DEBUG)
