@@ -2,19 +2,16 @@ import random
 from configparser import ConfigParser
 
 class Workbook(object):
-    def __init__(self, opr = 'addition'):
-        self.math = {'x':0,
-                     'y':0,
+    def __init__(self):
+        self.math = {'x':10000,
+                     'y':10000,
                      'result':0,
-                     'symbol': None}
+                     'symbol': '+'}
 
          ## Setup defaults
         parser = ConfigParser()
         parser.read('homework.conf')
         self.addXmin = int(parser.get('addition', 'xMin'))
-        print('workbook.py addXmin')
-        print(self.addXmin)
-        print('')
         self.addXmax = int(parser.get('addition', 'xMax'))
         self.addYmin = int(parser.get('addition', 'yMin'))
         self.addYmax = int(parser.get('addition', 'yMax'))
@@ -31,14 +28,9 @@ class Workbook(object):
         self.subYmin = int(parser.get('subtraction', 'yMin'))
         self.subYmax = int(parser.get('subtraction', 'yMax'))
 
-        ## Grab the handler
-        self.handler(opr)
-
 
     def addition(self, x = None, y = None):
         """ x + y """
-        print(self.addXmin)
-        print(self.addXmax)
         if x is None and y is None:
             x = random.randint(self.addXmin, self.addXmax)
             y = random.randint(self.addYmin, self.addYmax)

@@ -25,21 +25,9 @@ class Shared(object):
         self.problemWindow = None
 
 
-def main(args):
-    ## Max runs
-    if args.r is not None:
-        try:
-            runs = int(args.r)
-        except:
-            runs = 10
-    else:
-        runs = 10
-
+def main():
     ## Grab a Workbook and Notebook
-    if args.t is None:
-        wb = Workbook('addition')
-    else:
-        wb = Workbook(args.t)
+    wb = Workbook()
     nb = Notebook()
     sh = Shared(wb, nb)
 
@@ -62,18 +50,15 @@ def main(args):
 
         ## Read user input
         eventMain, valuesMain = windowMain.read()
-        print(valuesMain)
+        # print(valuesMain)
 
         ## Deal with main close
-        # if event is None:
         if eventMain == sg.WIN_CLOSED:
             logging.critical('Main window closed\n')
             break
 
         ## Update shared config
         sh.wb.addXmin = valuesMain.get('addXmin')  ## Offload to menu.py
-        print(sh.wb.addXmin)
-        print(valuesMain.get('addXmin'))
         sh.wb.addXmax = int(valuesMain.get('addXmax'))  ## Offload to menu.py
         sh.wb.addYmin = int(valuesMain.get('addYmin'))  ## Offload to menu.py
         sh.wb.addYmax = int(valuesMain.get('addYmax'))  ## Offload to menu.py
@@ -93,15 +78,53 @@ def main(args):
         sh.wb.subYmin = int(valuesMain.get('subYmin'))  ## Offload to menu.py
         sh.wb.subYmax = int(valuesMain.get('subYmax'))  ## Offload to menu.py
 
+        ## Selecteds
+        sh.wb.selectedAddition = valuesMain.get('selectedAddition')
+        sh.wb.selectedDivision = valuesMain.get('selectedDivision')
+        sh.wb.selectedMultiplication = valuesMain.get('selectedMultiplication')
+        sh.wb.selectedSubtraction = valuesMain.get('selectedSubtraction')
+
+        ## Runs
+        sh.wb.runsAddition = int(valuesMain.get('runsAddition'))
+        sh.wb.runsDivision = int(valuesMain.get('runsDivision'))
+        sh.wb.runsMultiplication = int(valuesMain.get('runsMultiplication'))
+        sh.wb.runsSubtraction = int(valuesMain.get('runsSubtraction'))
+
+        ## List loading
+        if sh.wb.selectedAddition is True:
+            addList = ['addition'] * sh.wb.runsAddition
+        else:
+             addList = []
+        if sh.wb.selectedDivision is True:
+            divList = ['division'] * sh.wb.runsDivision
+        else:
+             divList = []
+        if sh.wb.selectedMultiplication is True:
+            mulList = ['multiplication'] * sh.wb.runsMultiplication
+        else:
+            mulList = []
+        if sh.wb.selectedSubtraction is True:
+            subList = ['subtraction'] * sh.wb.runsSubtraction
+        else:
+            subList = []
+        oprList = addList + divList + mulList + subList
+
         ## Settings accepted, move on to problem
         if eventMain == 'Launch' and not windowProblem_active:
             windowProblem_active = True
             windowMain.Hide()
+
+            ### Some kind of bug with smaller initial strings for auto_size_text
+            sh.wb.math.update({'x': 10000})
+            sh.wb.math.update({'y': 10000})
+
             layoutProblem = mn.problem()
-            windowProblem = sg.Window('Question #1', layoutProblem)
+            windowProblem = sg.Window('! PRACTICE QUESTION !', layoutProblem)
             sh.windowProblem = windowProblem
 
             ## Loop through user input on problems
+            runs = len(oprList)
+            firstRun = True
             while True:
 
                 ## Math layout
@@ -113,7 +136,6 @@ def main(args):
 
                 ## Deal with problem closed
                 if eventProblem == sg.WIN_CLOSED:
-                    print('CLOSED')
                     logging.critical('Problem window closed')
                     windowProblem.Close()
                     windowProblem_active = False
@@ -121,69 +143,74 @@ def main(args):
                     break
 
                 ## Store answer in notepad
-                rst = valuesProblem.get('answer')
-
-                try:
-                    ## Convert to expecteds
-                    eRst = wb.math.get('result')
-                    eType = type(eRst)
-                    if eType is int:
-                        vRst = int(rst)
-                    elif eType is float:
-                        vRst = float(rst)
-
-                    ## Verify the math
-                    cVal = False
-                    if vRst == eRst:
-                        cVal = True
-                    else:
-                        cVal = False
-
-                    ## Update notebook
-                    nb.pad.update({sh.counter: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, vRst)})
-                    logging.info({sh.counter: (prb, cVal, eRst, vRst)})
-
-                except:
-                    cVal = False
-                    logging.debug({sh.counter: (prb, cVal, eRst, rst)})
-                    nb.pad.update({sh.counter: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, rst)})
-
-                ## Store the wrong answers so they can retry
-                if cVal is False:
-                    x = prb.split()[0]
-                    o = prb.split()[1]
-                    y = prb.split()[2]
-                    nb.retries.update({sh.counter: (x, o, y)})
-
-                ## Counter check
-                if sh.counter == runs:
-                    time.sleep(1)
-
-                    ## Retry logic
-                    if len(nb.retries) > 0:
-                        for k, v in nb.retries.items():
-                            pass ## Start here for retry functionality
-
-                    ## Notate how well
-                    tCorrect = 0
-                    for v in nb.pad.values():
-                        if v[2] is True:
-                            tCorrect += 1
-                    passPct = '{:.2f}'.format(tCorrect * (100 / runs)) + '%'
-                    logging.info('Correct answers ~~> {0} out of {1} ~~> {2}'.format(tCorrect, runs, passPct))
-                    logging.info('{0} runs met, exiting\n'.format(runs))
-
-                    ## Close out current problem window
-                    windowProblem.Close()
-                    windowProblem_active = False
-                    windowMain.UnHide()
-
-                    ## Reset counter
-                    sh.counter = 1
-
+                if firstRun is True:
+                    firstRun = False
+                    mn.probGen(oprList.pop(0))
                 else:
-                    ## Load new problem
-                    mn.probGen()
+                    rst = valuesProblem.get('answer')
+
+                    try:
+                        ## Convert to expecteds
+                        eRst = wb.math.get('result')
+                        eType = type(eRst)
+                        if eType is int:
+                            vRst = int(rst)
+                        elif eType is float:
+                            vRst = float(rst)
+
+                        ## Verify the math
+                        cVal = False
+                        if vRst == eRst:
+                            cVal = True
+                        else:
+                            cVal = False
+
+                        ## Update notebook
+                        nb.pad.update({sh.counter - 1: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, vRst)})
+                        logging.info({sh.counter - 1: (prb, cVal, eRst, vRst)})
+
+                    except:
+                        cVal = False
+                        logging.debug({sh.counter - 1: (prb, cVal, eRst, rst)})
+                        nb.pad.update({sh.counter - 1: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, rst)})
+
+                    ## Store the wrong answers so they can retry
+                    if cVal is False:
+                        x = prb.split()[0]
+                        o = prb.split()[1]
+                        y = prb.split()[2]
+                        nb.retries.update({sh.counter: (x, o, y)})
+
+                    ## Counter check
+                    if sh.counter == runs + 1:
+                        ## Retry logic
+                        if len(nb.retries) > 0:
+                            for k, v in nb.retries.items():
+                                pass ## Start here for retry functionality
+
+                        ## Notate how well
+                        tCorrect = 0
+                        for v in nb.pad.values():
+                            if v[2] is True:
+                                tCorrect += 1
+                        passPct = '{:.2f}'.format(tCorrect * (100 / runs)) + '%'
+                        logging.info('Correct answers ~~> {0} out of {1} ~~> {2}'.format(tCorrect, runs, passPct))
+                        logging.info('{0} runs met, exiting\n'.format(runs))
+
+                        ## Close out current problem window
+                        windowProblem.Close()
+                        windowProblem_active = False
+                        windowMain.UnHide()
+
+                        ## Reset counter
+                        sh.counter = 1
+
+                    else:
+                        ## Load new problem
+                        try:
+                            mn.probGen(oprList.pop(0))
+                        except IndexError:
+                            pass
 
 ## Setup logging
 logging.basicConfig(filename='student.log', format='%(asctime)s %(message)s',datefmt='%Y%m%d %I:%M:%S', level=logging.DEBUG)
@@ -191,18 +218,5 @@ logging.basicConfig(filename='student.log', format='%(asctime)s %(message)s',dat
 ## Setup window theme
 sg.theme('Dark')
 
-## Sounds -- lags on a pi, look for a better solution
-# pSound = pyglet.media.load('sounds/pass.ogg', streaming = False)
-# fSound = pyglet.media.load('sounds/fail.ogg', streaming = False)
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description = 'homework')
-    parser.add_argument('-t',
-                        choices = ['addition',
-                                   'division',
-                                   'multiplication',
-                                   'subtraction'],
-                        help = 'Type of homework - Default is addition')
-    parser.add_argument('-r',
-                        help = 'Number of homework problems')
-    main(parser.parse_args())
+    main()
