@@ -2,11 +2,11 @@ import random
 from configparser import ConfigParser
 
 class Workbook(object):
-    def __init__(self, opr = 'addition'):
-        self.math = {'x':0,
-                     'y':0,
+    def __init__(self):
+        self.math = {'x':10000,
+                     'y':10000,
                      'result':0,
-                     'symbol': None}
+                     'symbol': '+'}
 
          ## Setup defaults
         parser = ConfigParser()
@@ -27,9 +27,6 @@ class Workbook(object):
         self.subXmax = int(parser.get('subtraction', 'xMax'))
         self.subYmin = int(parser.get('subtraction', 'yMin'))
         self.subYmax = int(parser.get('subtraction', 'yMax'))
-
-        ## Grab the handler
-        self.handler(opr)
 
 
     def addition(self, x = None, y = None):
