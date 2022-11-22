@@ -4,6 +4,7 @@ import argparse
 import logging
 import math
 import PySimpleGUI as sg
+import sqlite3 as lite
 from configparser import ConfigParser
 from datetime import datetime
 from lib.menu import Menu
@@ -23,6 +24,22 @@ class Shared(object):
         self.nb = nb
         self.mainWindow = None
         self.problemWindow = None
+
+        ### db thoughts
+        # self.con = lite.connect('workbook.sqlite3')
+        # self.db = self.con.cursor()
+        #
+        # self.db.execute("""
+        #                 CREATE TABLE IF NOT EXISTS homework(id INTEGER,
+        #                                                     qid INTEGER,
+        #                                                     tstamp INTEGER,
+        #                                                     x REAL,
+        #                                                     y REAL,
+        #                                                     symbol TEXT,
+        #                                                     outcome REAL,
+        #                                                     expected REAL,
+        #                                                     actual REAL);
+        #                 """)
 
 
 def main():
@@ -58,7 +75,7 @@ def main():
             break
 
         ## Update shared config
-        sh.wb.addXmin = valuesMain.get('addXmin')  ## Offload to menu.py
+        sh.wb.addXmin = int(valuesMain.get('addXmin'))  ## Offload to menu.py
         sh.wb.addXmax = int(valuesMain.get('addXmax'))  ## Offload to menu.py
         sh.wb.addYmin = int(valuesMain.get('addYmin'))  ## Offload to menu.py
         sh.wb.addYmax = int(valuesMain.get('addYmax'))  ## Offload to menu.py
@@ -153,17 +170,19 @@ def main():
                         ## Convert to expecteds
                         eRst = wb.math.get('result')
                         eType = type(eRst)
+
+                        ## apples to apples
                         if eType is int:
                             vRst = int(rst)
                         elif eType is float:
                             vRst = float(rst)
+                        else:
+                            vRst = rst
 
                         ## Verify the math
                         cVal = False
                         if vRst == eRst:
                             cVal = True
-                        else:
-                            cVal = False
 
                         ## Update notebook
                         nb.pad.update({sh.counter - 1: (datetime.now().strftime("%Y%m%d %I:%M:%S"), prb, cVal, eRst, vRst)})
@@ -213,7 +232,7 @@ def main():
                             pass
 
 ## Setup logging
-logging.basicConfig(filename='student.log', format='%(asctime)s %(message)s',datefmt='%Y%m%d %I:%M:%S', level=logging.DEBUG)
+logging.basicConfig(filename = 'student.log', format = '%(asctime)s %(message)s',datefmt = '%Y%m%d %I:%M:%S', level = logging.DEBUG)
 
 ## Setup window theme
 sg.theme('Dark')

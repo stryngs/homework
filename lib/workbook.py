@@ -11,18 +11,26 @@ class Workbook(object):
          ## Setup defaults
         parser = ConfigParser()
         parser.read('homework.conf')
+
+        ## addition parameters
         self.addXmin = int(parser.get('addition', 'xMin'))
         self.addXmax = int(parser.get('addition', 'xMax'))
         self.addYmin = int(parser.get('addition', 'yMin'))
         self.addYmax = int(parser.get('addition', 'yMax'))
+
+        ## division parameters
         self.divXmin = int(parser.get('division', 'xMin'))
         self.divXmax = int(parser.get('division', 'xMax'))
         self.divYmin = int(parser.get('division', 'yMin'))
         self.divYmax = int(parser.get('division', 'yMax'))
+
+        ## multiplication parameters
         self.mulXmin = int(parser.get('multiplication', 'xMin'))
         self.mulXmax = int(parser.get('multiplication', 'xMax'))
         self.mulYmin = int(parser.get('multiplication', 'yMin'))
         self.mulYmax = int(parser.get('multiplication', 'yMax'))
+
+        ## subtraction parameters
         self.subXmin = int(parser.get('subtraction', 'xMin'))
         self.subXmax = int(parser.get('subtraction', 'xMax'))
         self.subYmin = int(parser.get('subtraction', 'yMin'))
@@ -42,13 +50,31 @@ class Workbook(object):
 
 
     def division(self, x = None, y = None):
-        """ x / y """
+        """ x / y || y / x """
         if x is None and y is None:
             x = random.randint(self.divXmin, self.divXmax)
-            y = x * random.randint(self.divYmin, self.divYmax)  ## No remainder
-        self.math["x"] = x
-        self.math["y"] = y
-        self.math["result"] = x / y
+            y = random.randint(self.divYmin, self.divYmax)
+
+        ## Long divison conversions
+        if x > y:
+            self.math["x"] = x
+            self.math["y"] = y
+            v = x / y
+            mod = x % y
+            if mod == 0:
+                val = str(v).split('.')[0]
+            else:
+                val = str(v).split('.')[0] + f'r{mod}'
+        else:
+            self.math["x"] = y
+            self.math["y"] = x
+            v = y / x
+            mod = y % x
+            if mod == 0:
+                val = str(v).split('.')[0]
+            else:
+                val = str(v).split('.')[0] + f'r{mod}'
+        self.math["result"] = val
         self.math["symbol"] = '/'
         self.opr = "division"
 
