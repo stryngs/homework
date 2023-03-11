@@ -53,7 +53,7 @@ def main():
     layoutMain = mn.main()
 
     # Create the Window
-    windowMain = sg.Window('Homework settings', layoutMain, resizable = True).Finalize()
+    windowMain = sg.Window('Homework settings', layoutMain, resizable = True, size = (1368, 1280)).Finalize()
     windowProblem_active = False
     sh.windowMain = windowMain
 

@@ -189,12 +189,12 @@ class Menu(object):
                               key = 'runsSubtraction')],
                    [sg.Button('Launch', pad = (500, 0), bind_return_key = True,
                     font = self.theFont, )]]
-
-        self.layout = addMenu + [[sg.Text('_' * 185)]] +\
-                      divMenu + [[sg.Text('_' * 185)]] +\
-                      mulMenu + [[sg.Text('_' * 185)]] +\
-                      subMenu + [[sg.Text('_' * 185)]] +\
-                      inpMenu
+        theMenu = addMenu + [[sg.Text('_' * 185)]] +\
+                  divMenu + [[sg.Text('_' * 185)]] +\
+                  mulMenu + [[sg.Text('_' * 185)]] +\
+                  subMenu + [[sg.Text('_' * 185)]] +\
+                  inpMenu
+        self.layout = [[sg.Column(theMenu, scrollable = True, vertical_scroll_only = True, expand_x = True, expand_y = True)]]
         return self.layout
 
     def problem(self):
