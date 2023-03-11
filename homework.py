@@ -12,11 +12,6 @@ from lib.notebook import Notebook
 from lib.workbook import Workbook
 import time
 
-"""
-Logging format:
-<Date> <Time> <Math problem #> <Math problem> <Pass or Fail> <Expected answer> <Student answer>
-"""
-
 class Shared(object):
     """Shared namespace"""
     def __init__(self, wb, nb):
@@ -58,7 +53,7 @@ def main():
     layoutMain = mn.main()
 
     # Create the Window
-    windowMain = sg.Window('Homework settings', layoutMain).Finalize()
+    windowMain = sg.Window('Homework settings', layoutMain, resizable = True).Finalize()
     windowProblem_active = False
     sh.windowMain = windowMain
 
@@ -98,12 +93,14 @@ def main():
         ## Selecteds
         sh.wb.selectedAddition = valuesMain.get('selectedAddition')
         sh.wb.selectedDivision = valuesMain.get('selectedDivision')
+        sh.wb.selectedMixedNumberAddition = valuesMain.get('selectedMixedNumberAddition')
         sh.wb.selectedMultiplication = valuesMain.get('selectedMultiplication')
         sh.wb.selectedSubtraction = valuesMain.get('selectedSubtraction')
 
         ## Runs
         sh.wb.runsAddition = int(valuesMain.get('runsAddition'))
         sh.wb.runsDivision = int(valuesMain.get('runsDivision'))
+        sh.wb.runsMixedNumberAddition = int(valuesMain.get('runsMixedNumberAddition'))
         sh.wb.runsMultiplication = int(valuesMain.get('runsMultiplication'))
         sh.wb.runsSubtraction = int(valuesMain.get('runsSubtraction'))
 
@@ -116,6 +113,10 @@ def main():
             divList = ['division'] * sh.wb.runsDivision
         else:
              divList = []
+        if sh.wb.selectedMixedNumberAddition is True:
+            mixAddList = ['mixedNumberAddition'] * sh.wb.runsMixedNumberAddition
+        else:
+            mixAddList = []
         if sh.wb.selectedMultiplication is True:
             mulList = ['multiplication'] * sh.wb.runsMultiplication
         else:
@@ -124,7 +125,7 @@ def main():
             subList = ['subtraction'] * sh.wb.runsSubtraction
         else:
             subList = []
-        oprList = addList + divList + mulList + subList
+        oprList = addList + divList + mulList + subList + mixAddList
 
         ## Settings accepted, move on to problem
         if eventMain == 'Launch' and not windowProblem_active:
@@ -136,7 +137,7 @@ def main():
             sh.wb.math.update({'y': 10000})
 
             layoutProblem = mn.problem()
-            windowProblem = sg.Window('! PRACTICE QUESTION !', layoutProblem)
+            windowProblem = sg.Window('! PRACTICE QUESTION !', layoutProblem, resizable = True)
             sh.windowProblem = windowProblem
 
             ## Loop through user input on problems
@@ -231,7 +232,7 @@ def main():
                         except IndexError:
                             pass
 
-## Setup logging
+## Setup logging - <Date> <Time> <Math problem #> <Math problem> <Pass or Fail> <Expected answer> <Student answer>
 logging.basicConfig(filename = 'student.log', format = '%(asctime)s %(message)s',datefmt = '%Y%m%d %I:%M:%S', level = logging.DEBUG)
 
 ## Setup window theme

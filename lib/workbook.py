@@ -1,5 +1,7 @@
 import random
 from configparser import ConfigParser
+from decimal import Decimal
+from math import gcd
 
 class Workbook(object):
     def __init__(self):
@@ -24,6 +26,20 @@ class Workbook(object):
         self.divYmin = int(parser.get('division', 'yMin'))
         self.divYmax = int(parser.get('division', 'yMax'))
 
+        ## mixed number addition parameters
+        self.mixXmin = int(parser.get('mixedNumberAddition', 'xMin'))
+        self.mixXmax = int(parser.get('mixedNumberAddition', 'xMax'))
+        self.mixYmin = int(parser.get('mixedNumberAddition', 'yMin'))
+        self.mixYmax = int(parser.get('mixedNumberAddition', 'yMax'))
+        self.mixZmin = int(parser.get('mixedNumberAddition', 'zMin'))
+        self.mixZmax = int(parser.get('mixedNumberAddition', 'zMax'))
+        self.mixAmin = int(parser.get('mixedNumberAddition', 'aMin'))
+        self.mixAmax = int(parser.get('mixedNumberAddition', 'aMax'))
+        self.mixBmin = int(parser.get('mixedNumberAddition', 'bMin'))
+        self.mixBmax = int(parser.get('mixedNumberAddition', 'bMax'))
+        self.mixCmin = int(parser.get('mixedNumberAddition', 'cMin'))
+        self.mixCmax = int(parser.get('mixedNumberAddition', 'cMax'))
+
         ## multiplication parameters
         self.mulXmin = int(parser.get('multiplication', 'xMin'))
         self.mulXmax = int(parser.get('multiplication', 'xMax'))
@@ -35,6 +51,36 @@ class Workbook(object):
         self.subXmax = int(parser.get('subtraction', 'xMax'))
         self.subYmin = int(parser.get('subtraction', 'yMin'))
         self.subYmax = int(parser.get('subtraction', 'yMax'))
+
+
+    def handler(self, opr = 'addition',
+                x = None, y = None, z = None, a = None, b = None, c = None):
+        self.opr = opr
+        if opr == 'addition':
+            if x is None and y is None:
+                self.addition()
+            else:
+                self.addition(x, y)
+        elif opr == 'subtraction':
+            if x is None and y is None:
+                self.subtraction()
+            else:
+                self.subtraction(x, y)
+        elif opr == 'multiplication':
+            if x is None and y is None:
+                self.multiplication()
+            else:
+                self.multiplication(x, y)
+        elif opr == 'division':
+            if x is None and y is None:
+                self.division()
+            else:
+                self.division(x, y)
+        elif opr == 'mixedNumberAddition':
+            if x is None and y is None and z is None and a is None and b is None and c is None:
+                self.mixedNumberAddition()
+            else:
+                self.mixedNumberAddition(x, y, z, a, b, c)
 
 
     def addition(self, x = None, y = None):
@@ -79,30 +125,6 @@ class Workbook(object):
         self.opr = "division"
 
 
-    def handler(self, opr = 'addition', x = None, y = None):
-        self.opr = opr
-        if opr == 'addition':
-            if x is None and y is None:
-                self.addition()
-            else:
-                self.addition(x, y)
-        elif opr == 'subtraction':
-            if x is None and y is None:
-                self.subtraction()
-            else:
-                self.subtraction(x, y)
-        elif opr == 'multiplication':
-            if x is None and y is None:
-                self.multiplication()
-            else:
-                self.multiplication(x, y)
-        elif opr == 'division':
-            if x is None and y is None:
-                self.division()
-            else:
-                self.division(x, y)
-
-
     def multiplication(self, x = None, y = None):
         """ x * y """
         if x is None and y is None:
@@ -130,3 +152,77 @@ class Workbook(object):
             self.math["result"] = y - x
         self.math["symbol"] = '-'
         self.opr = "subtraction"
+
+
+    def mixedNumberAddition(self, x = None, y = None, z = None,
+                            a = None, b = None, c = None):
+        """ x y/z + a b/c """
+        if x is None:
+            x = random.randint(self.mixXmin, self.mixXmax)
+        if y is None:
+            y = random.randint(self.mixYmin, self.mixYmax)
+        if z is None:
+            z = random.randint(self.mixZmin, self.mixZmax)
+        if a is None:
+            a = random.randint(self.mixAmin, self.mixAmax)
+        if b is None:
+            b = random.randint(self.mixBmin, self.mixBmax)
+        if c is None:
+            c = random.randint(self.mixCmin, self.mixCmax)
+
+        ## Proper fractions
+        if y > z:
+            self.tY = z
+            self.tZ = y
+        else:
+            self.tY = y
+            self.tZ = z
+        y = self.tY
+        z = self.tZ
+        if b > c:
+            self.tB = c
+            self.tC = b
+        else:
+            self.tB = b
+            self.tC = c
+        b = self.tB
+        c = self.tC
+
+        ## Left side denom * whole
+        _x = Decimal(z) * Decimal(x)
+        _y = _x + Decimal(y)                                                    ## _y is now the left numerator
+
+        ## Right side denom * whole
+        x_ = Decimal(c) * Decimal(a)
+        y_ = x_ + Decimal(b)                                                    ## y_ is the right numerator
+
+        ## Shortcut the work and increase both denominators
+        _z_ = Decimal(z) * Decimal(c)
+
+        ## Left new numerator
+        __y = _y * Decimal(c)
+
+        ## Right new numerator
+        y__ = y_ * Decimal(z)
+
+        ## Sum of new numerators
+        _y_ = __y + y__
+
+        ## Now convert _y_ / _z_ to a mixed number.
+        X = Decimal(_y_) / Decimal(_z_)
+        Y = str(X).split('.')[0]
+        Z = Decimal(_y_) % Decimal(_z_)
+
+        ## Remainders
+        if Z != Decimal(0):
+            v = gcd(int(Z), int(_z_))
+            Z = Z / v
+            _z_ = _z_ / v
+            self.math["result"] = f'{Y} {Z}/{_z_}'
+        else:
+            self.math["result"] = str(X)
+
+        self.math["x"] = f'{x} {y}/{z}'
+        self.math["y"] = f'{a} {b}/{c}'
+        self.math["symbol"] = '+'
+        self.opr = 'mixedNumberAddition'
