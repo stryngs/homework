@@ -5,8 +5,8 @@ class Menu(object):
 
     def __init__(self, shared):
         self.sh = shared
-        self.theFont = 'Arial 24'
-        self.setFont = 'Courier 24'
+        self.theFont = 'Arial 22'
+        self.setFont = 'Courier 22'
 
     def main(self):
         """Present the main menu"""
@@ -132,7 +132,7 @@ class Menu(object):
                                 default = True,
                                 font = self.setFont,
                                 key = 'selectedAddition'),
-                    sg.Text('               Problem count ~~> ',
+                    sg.Text('                 Problem count ~~> ',
                             font = self.setFont),
                     sg.Slider(range=(0, 100),
                               default_value = 10,
@@ -144,7 +144,7 @@ class Menu(object):
                                 default = False,
                                 font = self.setFont,
                                 key = 'selectedDivision'),
-                    sg.Text('               Problem count ~~> ',
+                    sg.Text('                 Problem count ~~> ',
                             font = self.setFont),
                     sg.Slider(range=(0, 100),
                               default_value = 10,
@@ -156,7 +156,7 @@ class Menu(object):
                                 default = False,
                                 font = self.setFont,
                                 key = 'selectedMixedNumberAddition'),
-                    sg.Text('  Problem count ~~> ',
+                    sg.Text('    Problem count ~~> ',
                             font = self.setFont),
                     sg.Slider(range=(0, 100),
                               default_value = 10,
@@ -164,11 +164,23 @@ class Menu(object):
                               size = (50, 20),
                               key = 'runsMixedNumberAddition')],
                    [sg.Text()],
+                   [sg.Checkbox('Mixed Number Subtraction',
+                                default = False,
+                                font = self.setFont,
+                                key = 'selectedMixedNumberSubtraction'),
+                    sg.Text(' Problem count ~~> ',
+                            font = self.setFont),
+                    sg.Slider(range=(0, 100),
+                              default_value = 10,
+                              orientation='h',
+                              size = (50, 20),
+                              key = 'runsMixedNumberSubtraction')],
+                   [sg.Text()],
                    [sg.Checkbox('Multiplication',
                                 default = False,
                                 font = self.setFont,
                                 key = 'selectedMultiplication'),
-                    sg.Text('         Problem count ~~> ',
+                    sg.Text('           Problem count ~~> ',
                             font = self.setFont),
                     sg.Slider(range=(0, 100),
                               default_value = 10,
@@ -180,7 +192,7 @@ class Menu(object):
                                 default = False,
                                 font = self.setFont,
                                 key = 'selectedSubtraction'),
-                    sg.Text('            Problem count ~~> ',
+                    sg.Text('              Problem count ~~> ',
                             font = self.setFont),
                     sg.Slider(range=(0, 100),
                               default_value = 10,

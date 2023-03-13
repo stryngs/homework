@@ -1,6 +1,7 @@
 import random
 from configparser import ConfigParser
 from decimal import Decimal
+from fractions import Fraction
 from math import gcd
 
 class Workbook(object):
@@ -26,19 +27,19 @@ class Workbook(object):
         self.divYmin = int(parser.get('division', 'yMin'))
         self.divYmax = int(parser.get('division', 'yMax'))
 
-        ## mixed number addition parameters
-        self.mixXmin = int(parser.get('mixedNumberAddition', 'xMin'))
-        self.mixXmax = int(parser.get('mixedNumberAddition', 'xMax'))
-        self.mixYmin = int(parser.get('mixedNumberAddition', 'yMin'))
-        self.mixYmax = int(parser.get('mixedNumberAddition', 'yMax'))
-        self.mixZmin = int(parser.get('mixedNumberAddition', 'zMin'))
-        self.mixZmax = int(parser.get('mixedNumberAddition', 'zMax'))
-        self.mixAmin = int(parser.get('mixedNumberAddition', 'aMin'))
-        self.mixAmax = int(parser.get('mixedNumberAddition', 'aMax'))
-        self.mixBmin = int(parser.get('mixedNumberAddition', 'bMin'))
-        self.mixBmax = int(parser.get('mixedNumberAddition', 'bMax'))
-        self.mixCmin = int(parser.get('mixedNumberAddition', 'cMin'))
-        self.mixCmax = int(parser.get('mixedNumberAddition', 'cMax'))
+        ## mixed number parameters
+        self.mixXmin = int(parser.get('mixedNumber', 'xMin'))
+        self.mixXmax = int(parser.get('mixedNumber', 'xMax'))
+        self.mixYmin = int(parser.get('mixedNumber', 'yMin'))
+        self.mixYmax = int(parser.get('mixedNumber', 'yMax'))
+        self.mixZmin = int(parser.get('mixedNumber', 'zMin'))
+        self.mixZmax = int(parser.get('mixedNumber', 'zMax'))
+        self.mixAmin = int(parser.get('mixedNumber', 'aMin'))
+        self.mixAmax = int(parser.get('mixedNumber', 'aMax'))
+        self.mixBmin = int(parser.get('mixedNumber', 'bMin'))
+        self.mixBmax = int(parser.get('mixedNumber', 'bMax'))
+        self.mixCmin = int(parser.get('mixedNumber', 'cMin'))
+        self.mixCmax = int(parser.get('mixedNumber', 'cMax'))
 
         ## multiplication parameters
         self.mulXmin = int(parser.get('multiplication', 'xMin'))
@@ -61,27 +62,31 @@ class Workbook(object):
                 self.addition()
             else:
                 self.addition(x, y)
-        elif opr == 'subtraction':
-            if x is None and y is None:
-                self.subtraction()
-            else:
-                self.subtraction(x, y)
-        elif opr == 'multiplication':
-            if x is None and y is None:
-                self.multiplication()
-            else:
-                self.multiplication(x, y)
         elif opr == 'division':
             if x is None and y is None:
                 self.division()
             else:
                 self.division(x, y)
+        elif opr == 'subtraction':
+            if x is None and y is None:
+                self.subtraction()
+            else:
+                self.subtraction(x, y)
         elif opr == 'mixedNumberAddition':
             if x is None and y is None and z is None and a is None and b is None and c is None:
-                self.mixedNumberAddition()
+                self.mixedNumber('addition')
             else:
-                self.mixedNumberAddition(x, y, z, a, b, c)
-
+                self.mixedNumber('addition', x, y, z, a, b, c)
+        elif opr == 'mixedNumberSubtraction':
+            if x is None and y is None and z is None and a is None and b is None and c is None:
+                self.mixedNumber('subtraction')
+            else:
+                self.mixedNumber('subtraction', x, y, z, a, b, c)
+        elif opr == 'multiplication':
+            if x is None and y is None:
+                self.multiplication()
+            else:
+                self.multiplication(x, y)
 
     def addition(self, x = None, y = None):
         """ x + y """
@@ -154,9 +159,9 @@ class Workbook(object):
         self.opr = "subtraction"
 
 
-    def mixedNumberAddition(self, x = None, y = None, z = None,
-                            a = None, b = None, c = None):
-        """ x y/z + a b/c """
+    def mixedNumber(self, opr, x = None, y = None, z = None,
+                               a = None, b = None, c = None):
+        """ x y/z +||- a b/c """
         if x is None:
             x = random.randint(self.mixXmin, self.mixXmax)
         if y is None:
@@ -188,6 +193,22 @@ class Workbook(object):
         b = self.tB
         c = self.tC
 
+        ## Keep the numbers positive
+        print(x, y, z, a, b, c)
+        if a + Fraction(f'{b}/{c}') > x + Fraction(f'{y}/{z}'):
+            self.tA = x
+            self.tB = y
+            self.tC = z
+            self.tX = a
+            self.tY = b
+            self.tZ = c
+            a = self.tA
+            b = self.tB
+            c = self.tC
+            x = self.tX
+            y = self.tY
+            z = self.tZ
+
         ## Left side denom * whole
         _x = Decimal(z) * Decimal(x)
         _y = _x + Decimal(y)                                                    ## _y is now the left numerator
@@ -205,8 +226,11 @@ class Workbook(object):
         ## Right new numerator
         y__ = y_ * Decimal(z)
 
-        ## Sum of new numerators
-        _y_ = __y + y__
+        ## Operator work
+        if opr == 'addition':
+            _y_ = __y + y__
+        elif opr == 'subtraction':
+            _y_ = __y - y__
 
         ## Now convert _y_ / _z_ to a mixed number.
         X = Decimal(_y_) / Decimal(_z_)
@@ -224,5 +248,9 @@ class Workbook(object):
 
         self.math["x"] = f'{x} {y}/{z}'
         self.math["y"] = f'{a} {b}/{c}'
-        self.math["symbol"] = '+'
-        self.opr = 'mixedNumberAddition'
+        if opr == 'addition':
+            self.math["symbol"] = '+'
+            self.opr = 'mixedNumberAddition'
+        elif opr == 'subtraction':
+            self.math["symbol"] = '-'
+            self.opr = 'mixedNumberSubtraction'
