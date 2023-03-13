@@ -5,7 +5,7 @@ import logging
 import math
 import PySimpleGUI as sg
 import sqlite3 as lite
-from configparser import ConfigParser
+# from configparser import ConfigParser
 from datetime import datetime
 from lib.menu import Menu
 from lib.notebook import Notebook
@@ -94,6 +94,7 @@ def main():
         sh.wb.selectedAddition = valuesMain.get('selectedAddition')
         sh.wb.selectedDivision = valuesMain.get('selectedDivision')
         sh.wb.selectedMixedNumberAddition = valuesMain.get('selectedMixedNumberAddition')
+        sh.wb.selectedMixedNumberSubtraction = valuesMain.get('selectedMixedNumberSubtraction')
         sh.wb.selectedMultiplication = valuesMain.get('selectedMultiplication')
         sh.wb.selectedSubtraction = valuesMain.get('selectedSubtraction')
 
@@ -101,6 +102,7 @@ def main():
         sh.wb.runsAddition = int(valuesMain.get('runsAddition'))
         sh.wb.runsDivision = int(valuesMain.get('runsDivision'))
         sh.wb.runsMixedNumberAddition = int(valuesMain.get('runsMixedNumberAddition'))
+        sh.wb.runsMixedNumberSubtraction = int(valuesMain.get('runsMixedNumberSubtraction'))
         sh.wb.runsMultiplication = int(valuesMain.get('runsMultiplication'))
         sh.wb.runsSubtraction = int(valuesMain.get('runsSubtraction'))
 
@@ -117,6 +119,10 @@ def main():
             mixAddList = ['mixedNumberAddition'] * sh.wb.runsMixedNumberAddition
         else:
             mixAddList = []
+        if sh.wb.selectedMixedNumberSubtraction is True:
+            mixSubList = ['mixedNumberSubtraction'] * sh.wb.runsMixedNumberSubtraction
+        else:
+            mixSubList = []
         if sh.wb.selectedMultiplication is True:
             mulList = ['multiplication'] * sh.wb.runsMultiplication
         else:
@@ -125,7 +131,7 @@ def main():
             subList = ['subtraction'] * sh.wb.runsSubtraction
         else:
             subList = []
-        oprList = addList + divList + mulList + subList + mixAddList
+        oprList = addList + divList + mulList + subList + mixAddList + mixSubList
 
         ## Settings accepted, move on to problem
         if eventMain == 'Launch' and not windowProblem_active:
@@ -135,6 +141,10 @@ def main():
             ### Some kind of bug with smaller initial strings for auto_size_text
             sh.wb.math.update({'x': 10000})
             sh.wb.math.update({'y': 10000})
+            sh.wb.math.update({'z': 10000})
+            sh.wb.math.update({'a': 10000})
+            sh.wb.math.update({'b': 10000})
+            sh.wb.math.update({'c': 10000})
 
             layoutProblem = mn.problem()
             windowProblem = sg.Window('! PRACTICE QUESTION !', layoutProblem, resizable = True)
@@ -163,7 +173,12 @@ def main():
                 ## Store answer in notepad
                 if firstRun is True:
                     firstRun = False
-                    mn.probGen(oprList.pop(0))
+                    try:
+                        mn.probGen(oprList.pop(0))
+
+                    ## Handle situation where no options are selected
+                    except:
+                        windowProblem.Close()
                 else:
                     rst = valuesProblem.get('answer')
 
