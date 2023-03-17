@@ -43,3 +43,12 @@ A running tally of work is kept in student.log.  For the math problems the outpu
 - Answered correctly or not
 - Expected answer
 - Received answer
+
+## Screenshots
+![Screenshot](images/settingsPage.png)
+![Screenshot](images/addition.png)
+![Screenshot](images/division.png)
+![Screenshot](images/mixedNumberAddition.png)
+![Screenshot](images/mixedNumberSubtraction.png)
+![Screenshot](images/multiplication.png)
+![Screenshot](images/subtraction.png)
