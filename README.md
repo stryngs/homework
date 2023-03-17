@@ -46,6 +46,7 @@ A running tally of work is kept in student.log.  For the math problems the outpu
 
 ## Screenshots
 ![Screenshot](images/settingsPage.png)
+![Screenshot](images/studentLog.png)
 ![Screenshot](images/addition.png)
 ![Screenshot](images/division.png)
 ![Screenshot](images/mixedNumberAddition.png)
