@@ -194,7 +194,6 @@ class Workbook(object):
         c = self.tC
 
         ## Keep the numbers positive
-        print(x, y, z, a, b, c)
         if a + Fraction(f'{b}/{c}') > x + Fraction(f'{y}/{z}'):
             self.tA = x
             self.tB = y
