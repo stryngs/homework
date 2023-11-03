@@ -5,7 +5,6 @@ import logging
 import math
 import PySimpleGUI as sg
 import sqlite3 as lite
-# from configparser import ConfigParser
 from datetime import datetime
 from lib.menu import Menu
 from lib.notebook import Notebook
