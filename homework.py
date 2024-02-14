@@ -187,7 +187,10 @@ def main():
                         eType = type(eRst)
 
                         ## apples to apples
-                        if eType is int:
+                        if eType == str:
+                            if wb.math.get('symbol') == '/':                    ## Strip on / for r and spaces
+                                vRst = ''.join(rst.split())
+                        elif eType is int:
                             vRst = int(rst)
                         elif eType is float:
                             vRst = float(rst)
