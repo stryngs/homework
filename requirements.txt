@@ -1,2 +1,0 @@
-pyglet==1.5.16
-PySimpleGUI==4.40.0
