@@ -104,7 +104,11 @@ class Workbook(object):
         """ x / y || y / x """
         if x is None and y is None:
             x = random.randint(self.divXmin, self.divXmax)
+            while x == 0:
+                x = random.randint(self.divXmin, self.divXmax)
             y = random.randint(self.divYmin, self.divYmax)
+            while y == 0:
+                y = random.randint(self.divYmin, self.divYmax)
 
         ## Long divison conversions
         if x > y:
